@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,17 +21,19 @@ import java.util.List;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity {
     private static String tag = MainActivity.class.getSimpleName();
     private TextView mTextView;
     private String mString = "";
     private ProgressBar mProgress;
+    private CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,16 @@ public class MainActivity extends AppCompatActivity {
         //test_map();
         //test_filter_map_take();
         //test_flatMap();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (compositeSubscription != null && !compositeSubscription.isUnsubscribed()) {
+            compositeSubscription.unsubscribe();
+            compositeSubscription = null;
+        }
     }
 
     /**
@@ -167,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void test_scheduler() {
 
-        Observable.create(new Observable.OnSubscribe<Integer>() {
+        Subscription subscription = Observable.create(new Observable.OnSubscribe<Integer>() {
             @Override
             public void call(Subscriber<? super Integer> subscriber) {
                 SystemClock.sleep(3000);
@@ -199,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
                         mTextView.setBackgroundResource(integer);
                     }
                 });
+        compositeSubscription.add(subscription);
     }
 
     /**
@@ -209,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void test_map() {
         final int background = R.mipmap.ic_launcher;
-        Observable.just(background).map(new Func1<Integer, Drawable>() {
+        Subscription subscription = Observable.just(background).map(new Func1<Integer, Drawable>() {
             @Override
             public Drawable call(Integer integer) {
                 SystemClock.sleep(3000);
@@ -238,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
                         mTextView.setBackground(drawable);
                     }
                 });
+        compositeSubscription.add(subscription);
     }
 
     /**
@@ -289,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
      * 而这个『铺平』就是 flatMap() 所谓的 flat。
      */
     private void test_flatMap() {
-        Observable.from(DataManager.getInstance().getData(5, 5))
+        Subscription subscription = Observable.from(DataManager.getInstance().getData(5, 5))
 
                 .flatMap(new Func1<Singer, Observable<Song>>() {
                     @Override
@@ -323,5 +336,6 @@ public class MainActivity extends AppCompatActivity {
                         mTextView.setText(mString);
                     }
                 });
+        compositeSubscription.add(subscription);
     }
 }
