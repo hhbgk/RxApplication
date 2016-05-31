@@ -4,6 +4,14 @@ Learning RxJava for Android from [《给 Android 开发者的 RxJava 详解》](
 ###Introduction
 看了[扔物线](https://github.com/rengwuxian)的文章[给Android开发者的RxJava详解](http://gank.io/post/560e15be2dca930e00da1083)后，加上自己的理解而编写的例子
 
+###Test API
+      test_basic();
+      test_just();
+      test_from();
+      test_scheduler();
+      test_map();
+      test_filter_map_take();
+      test_flatMap();
 ###Dependencies
       compile 'io.reactivex:rxjava:1.1.5'
       compile 'io.reactivex:rxandroid:1.2.0'
